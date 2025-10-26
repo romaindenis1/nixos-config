@@ -1,5 +1,9 @@
 { config, pkgs, ... }:
 
+let
+  settings = import ./settings.nix;
+in
+
 {
   imports = [
     ./modules/core.nix
@@ -10,8 +14,8 @@
     ./modules/git.nix
   ];
 
-  home.username = "r"; # replace
-  home.homeDirectory = "/home/r"; # replace
+  home.username = settings.username;
+  home.homeDirectory = settings.homeDirectory;
 
   programs.home-manager.enable = true;
 

@@ -1,17 +1,21 @@
 { config, pkgs, lib, ... }:
 
+let
+  settings = import ../settings.nix;
+in
+
 {
   programs.git = {
     enable = true;
-    userName = "Romain";
-    userEmail = "ps04egl@eduvaud.ch";
+    userName = settings.git.name;
+    userEmail = settings.git.email;
   };
 
   home.file.".gitconfig" = {
     text = ''
 [user]
-  name = "Romain"
-  email = "ps04egl@eduvaud.ch"
+  name = "${settings.git.name}"
+  email = "${settings.git.email}"
 [color]
   ui = auto
 '';
