@@ -1,22 +1,23 @@
-# filepath: /home/r/Downloads/home-manager/flake.nix
 {
-  description = "Home Manager flake - modular config test";
+  description = "Home Manager for r";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
-    home-manager.url = "github:nix-community/home-manager/release-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs";
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ self, nixpkgs, ... }:
+  outputs = { self, nixpkgs, home-manager, ... }:
     let
-      system = "x86_64-linux"; # change to aarch64-linux if needed
+      system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
-      hm = inputs."home-manager";
+      settingsPath = builtins.path { path = ./settings.nix; };
+      hm = home-manager.lib;
     in {
       homeConfigurations = {
-        r = hm.lib.homeManagerConfiguration {
+        r = hm.homeManagerConfiguration {
           inherit pkgs;
-          modules = [ ./home.nix ];
+          modules = [ ./home.nix settingsPath ];
         };
       };
     };

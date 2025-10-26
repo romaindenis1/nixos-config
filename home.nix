@@ -14,20 +14,17 @@ in
     ./modules/git.nix
   ];
 
-  home.username = settings.username;
-  home.homeDirectory = settings.homeDirectory;
+  home.username = settings.home.username;
+  home.homeDirectory = settings.home.directory;
 
   programs.home-manager.enable = true;
 
-  # Example of enabling services or packages commonly used across modules
   home.packages = with pkgs; [
-    # editor / tooling
     neovim
     git
     unzip
     zsh
 
-    # utilities from modules
     diff-so-fancy
     waybar
     hyprland
@@ -42,14 +39,6 @@ in
     arc-theme
     chromium
 
-    # fonts and launchers
     noto-fonts
-    noto-fonts-cjk
-    jetbrains-mono
-    wofi
-    bemenu
   ];
-
-  # Set some sensible defaults you can override in modules
-  xdg.configHome = "${config.home.homeDirectory}/.config";
 }
