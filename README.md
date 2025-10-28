@@ -36,6 +36,18 @@ Activation
   ```
   Replace `your-hostname` with the flake entry for your machine.
 
+Settings
+
+- This repository includes a template `settings.nix.example` meant for public configuration.
+- For private/secret values (e.g. email, API keys, timezone), place an untracked `settings.nix` at `~/.config/nix/settings.nix`.
+- `home.nix` prioritses this file, and if not found, will fallback to the tracked settings in this repo
+
+You can create the untracked local settings file from the example with:
+
+```bash
+mkdir -p "$HOME/.config/nix" && cp settings.nix.example "$HOME/.config/nix/settings.nix" && chmod 600 "$HOME/.config/nix/settings.nix"
+```
+
 Structure
 
 - `home.nix` - top-level Home Manager configuration that imports `modules/*`.
