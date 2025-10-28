@@ -1,7 +1,15 @@
 { config, pkgs, ... }:
 
 let
-  settings = import ./settings.nix;
+  # Prefer local untracked settings; fallback on example
+  repoSettings = ./settings.nix.example;
+  userSettingsPath = "${builtins.getEnv "HOME"}/.config/nix/settings.nix";
+  settings = if builtins.pathExists userSettingsPath then
+               import userSettingsPath
+             else if builtins.pathExists repoSettings then
+               import repoSettings
+             else
+               abort ("No settings found: create " + userSettingsPath + " or add ./settings.nix (or settings.nix.example)");
 in
 
 {
