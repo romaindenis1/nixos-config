@@ -4,7 +4,7 @@
   # Install fonts into the user profile instead of using the NixOS `fonts.fonts` option
   home.packages = with pkgs; [
     noto-fonts
-    noto-fonts-cjk
+    noto-fonts-cjk-sans
     jetbrains-mono
   ];
 

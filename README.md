@@ -58,3 +58,9 @@ Notes
 
 - Keep package lists centralized in `home.nix` if multiple modules require the same packages to avoid accidental overrides.
 - Choose either the flake approach or system-level Home Manager NixOS module; do not mix both unless you know what you're doing.
+
+
+
+
+nix-shell -p home-manager -b backup --run 'home-manager switch -f ./home.nix'
+nix-shell -p home-manager --run 'home-manager switch -f ./home.nix -b backup'

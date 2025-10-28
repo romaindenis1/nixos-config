@@ -13,9 +13,11 @@
   # Add zsh plugins for autosuggestions and syntax highlighting
   home.packages = with pkgs; [ zsh-autosuggestions zsh-syntax-highlighting ];
 
-  home.file.".zshrc" = {
+  # Manage XDG Zsh config under ~/.config/zsh to avoid conflicting with other modules that
+  # might manage ~/.zshrc directly.
+  home.file.".config/zsh/zshrc" = {
     text = ''
-# .zshrc - managed by home-manager
+# ~/.config/zsh/zshrc - managed by home-manager
 export ZDOTDIR=$HOME/.config/zsh
 source $HOME/.nix-profile/etc/profile.d/nix.sh
 
