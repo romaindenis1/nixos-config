@@ -11,13 +11,13 @@
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
-      settingsPath = builtins.path { path = ./settings.nix; };
+      settings = import ./settings.nix;
       hm = home-manager.lib;
     in {
       homeConfigurations = {
         r = hm.homeManagerConfiguration {
           inherit pkgs;
-          modules = [ ./home.nix settingsPath ];
+          modules = [ ./home.nix ];
         };
       };
     };
