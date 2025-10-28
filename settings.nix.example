@@ -1,0 +1,15 @@
+{
+  home = {
+    username = "example";
+    directory = "/home/example";
+  };
+
+  userFullName = "example";
+  locale = "en_US.UTF-8";
+
+  git = {
+    name = "example";
+    email = "example@example.com";
+  };
+
+}
