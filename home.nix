@@ -41,12 +41,28 @@ in
     grim
     slurp
     xdg-desktop-portal
-    xdg-desktop-portal-wlr
-    zsh-autosuggestions
-    zsh-syntax-highlighting
-    arc-theme
-    chromium
-
     noto-fonts
+
+    qbittorrent
+    vlc
   ];
+
+# qBittorrent
+home.file.".config/systemd/user/qbittorrent.service".text = ''
+[Unit]
+Description=qBittorrent (user)
+After=network.target
+
+[Service]
+ExecStart=/bin/sh -c 'exec $HOME/.nix-profile/bin/qbittorrent'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+'';
+
+home.sessionVariables = {
+  NIX_PROFILE = "${pkgs.nix}/etc/profile.d/nix.sh";
+};
 }
