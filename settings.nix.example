@@ -12,4 +12,12 @@
     email = "example@example.com";
   };
 
+  # Optional: git URL for dotfiles 
+  # home activation will clone the repo and deploy dotfiles.
+  dotfiles = {
+    # e.g. "https://github.com/username/dotfiles.git" or "git@github.com:username/dotfiles.git"
+    # Probably some other methods too but those 2 forsure work
+    repo = "";
+  };
+
 }

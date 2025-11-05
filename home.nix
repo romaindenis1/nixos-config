@@ -20,6 +20,7 @@ in
     ./modules/fonts.nix
     ./modules/shell.nix
     ./modules/git.nix
+    ./modules/dotfiles.nix
   ];
 
   home.username = settings.home.username;
