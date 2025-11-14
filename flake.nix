@@ -1,5 +1,5 @@
 {
-  description = "Home Manager for r";
+  description = "Home manager for r";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs";
@@ -9,15 +9,29 @@
 
   outputs = { self, nixpkgs, home-manager, ... }:
     let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
-      settings = import ./settings.nix;
+      systems = [ "x86_64-linux" ];
+      pkgsFor = system: import nixpkgs { inherit system; };
       hm = home-manager.lib;
     in {
+      # Home Manager configurations
       homeConfigurations = {
         r = hm.homeManagerConfiguration {
-          inherit pkgs;
+          pkgs = pkgsFor "x86_64-linux";
           modules = [ ./home.nix ];
+        };
+      };
+
+      # Base desktop 
+      nixosConfigurations = {
+        desktop = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [ ./hosts/desktop.nix ];
+        };
+
+        # WSL
+        wsl = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [ ./hosts/wsl.nix ];
         };
       };
     };

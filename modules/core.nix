@@ -2,7 +2,7 @@
 
 {
   # Core settings shared across modules
-  home.stateVersion = "23.11"; # update to match your Home Manager / NixOS
+  home.stateVersion = "23.11"; 
 
   programs.git.enable = true;
 
