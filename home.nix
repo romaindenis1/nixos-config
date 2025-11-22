@@ -21,6 +21,9 @@ in
     ./modules/shell.nix
     ./modules/git.nix
     ./modules/dotfiles.nix
+    ./modules/compositor.nix
+    ./modules/bar.nix
+    ./modules/launcher.nix
   ];
 
   home.username = settings.home.username;
@@ -35,13 +38,6 @@ in
     zsh
 
     diff-so-fancy
-    waybar
-    hyprland
-    mako
-    wl-clipboard
-    grim
-    slurp
-    xdg-desktop-portal
     noto-fonts
 
     qbittorrent
