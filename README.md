@@ -1,66 +1,73 @@
-# NixOS / Home Manager config
+ # NixOS Configuration
 
-This repository contains a modular Home Manager configuration. Use as a flake or import the modules directly.
+A modular, flake-based NixOS configuration skeleton.
 
-Usage (flake)
+## Structure
 
-- Apply for a user defined in `home.nix`:
+This repository is designed to be modular, allowing you to easily swap Desktop Environments (DEs), Window Managers (WMs), and manage users and secrets.
 
-  nix run github:nix-community/home-manager -c home-manager switch --flake .#your-username
-
-- Or with an installed home-manager:
-
-  home-manager switch --flake .#your-username
-
-Activation
-
-- Standalone Home Manager (no flakes):
-  ```bash
-  home-manager switch -f ./home.nix
-  ```
-
-- Use nix shell to run Home Manager (flake):
-  ```bash
-  nix shell github:nix-community/home-manager -c home-manager switch --flake .#your-username
-  ```
-  Replace `your-username` with the flake output/username.
-
-- Use nix (with experimental features) to run Home Manager (flake):
-  ```bash
-  nix --extra-experimental-features "nix-command flakes" shell github:nix-community/home-manager -c "home-manager switch --flake .#your-username"
-  ```
-
-- Use nix shell to run a NixOS rebuild as root (flake):
-  ```bash
-  sudo nix shell nixpkgs#nixos-rebuild -c nixos-rebuild switch --flake .#your-hostname -I nixos-config=.
-  ```
-  Replace `your-hostname` with the flake entry for your machine.
-
-Settings
-
-- This repository includes a template `settings.nix.example` meant for public configuration.
-- For private/secret values (e.g. email, API keys, timezone), place an untracked `settings.nix` at `~/.config/nix/settings.nix`.
-- `home.nix` prioritses this file, and if not found, will fallback to the tracked settings in this repo
-
-You can create the untracked local settings file from the example with:
-
-```bash
-mkdir -p "$HOME/.config/nix" && cp settings.nix.example "$HOME/.config/nix/settings.nix" && chmod 600 "$HOME/.config/nix/settings.nix"
+```
+.
+├── flake.nix             # Entry point
+├── hosts
+│   └── default           # Host 'default'
+│       ├── configuration.nix # System entry point
+│       └── home.nix          # Home Manager entry point
+├── modules
+│   ├── core              # Core system configuration
+│   ├── desktop           # DE/WM configurations
+│   │   └── hyprland      # Hyprland module
+│   ├── programs          # App configurations
+│   └── ...
+└── secrets               # Secrets (gitignored)
+    └── secrets.nix       # Your secrets file
 ```
 
-Structure
+## Features
 
-- `home.nix` - top-level Home Manager configuration that imports `modules/*`.
-- `modules/` - per-feature modules (theme, shell, bar, hyprland, browser, git, fonts, menu).
-- `flake.nix` - (optional) pins `nixpkgs` and `home-manager` when using flakes.
+- **Flakes**: Uses Nix Flakes for reproducible builds.
+- **Home Manager**: Manages user dotfiles and packages.
+- **Modular**: Easily enable/disable modules in `hosts/default/configuration.nix`.
+- **Hyprland**: Pre-configured Hyprland module with Kitty.
+- **Secrets**: Separation of secrets from the git repository.
 
-Notes
+## Installation
 
-- Keep package lists centralized in `home.nix` if multiple modules require the same packages to avoid accidental overrides.
-- Choose either the flake approach or system-level Home Manager NixOS module; do not mix both unless you know what you're doing.
+1.  **Clone the repository**:
+    ```bash
+    git clone <your-repo-url> ~/nixos-config
+    cd ~/nixos-config
+    ```
 
+2.  **Generate Hardware Config**:
+    If this is a new machine, generate your hardware configuration:
+    ```bash
+    nixos-generate-config --show-hardware-config > hosts/default/hardware-configuration.nix
+    ```
+    Then uncomment the import in `hosts/default/configuration.nix`.
 
+3.  **Setup Secrets**:
+    Copy the example secrets file:
+    ```bash
+    cp secrets/secrets.nix.example secrets/secrets.nix
+    ```
+    Edit `secrets/secrets.nix` to add your sensitive data.
 
+4.  **Install/Switch**:
+    ```bash
+    nixos-rebuild switch --flake .#default
+    ```
 
-nix-shell -p home-manager -b backup --run 'home-manager switch -f ./home.nix'
-nix-shell -p home-manager --run 'home-manager switch -f ./home.nix -b backup'
+## Customization
+
+### Changing Desktop Environment
+To switch from Hyprland to another DE (e.g., KDE):
+1.  Create a new module in `modules/desktop/kde/default.nix`.
+2.  In `hosts/default/configuration.nix`, comment out the Hyprland import and add the KDE import.
+
+### Adding Packages
+- **System-wide**: Add to `modules/core/default.nix` or `hosts/default/configuration.nix`.
+- **User-specific**: Add to `hosts/default/home.nix`.
+
+### Managing Dotfiles
+This config uses Home Manager. You can define your dotfiles in `home.nix` or create separate modules in `modules/programs/` and import them.

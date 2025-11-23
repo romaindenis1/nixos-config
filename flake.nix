@@ -1,24 +1,29 @@
 {
-  description = "Home Manager for r";
+  description = "NixOS Configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    hyprland.url = "github:hyprwm/Hyprland";
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
-      settings = import ./settings.nix;
-      hm = home-manager.lib;
-    in {
-      homeConfigurations = {
-        r = hm.homeManagerConfiguration {
-          inherit pkgs;
-          modules = [ ./home.nix ];
-        };
+  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
+    nixosConfigurations = {
+      default = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./hosts/default/configuration.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.r = import ./hosts/default/home.nix;
+            home-manager.extraSpecialArgs = { inherit inputs; };
+          }
+        ];
       };
     };
+  };
 }
