@@ -1,73 +1,33 @@
- # NixOS Configuration
+# Minimal NixOS — Hyprland only
 
-A modular, flake-based NixOS configuration skeleton.
+This repository is configured to be minimal and to run Hyprland only. The intent is to keep the system free of KDE, Home Manager, and any other desktop environments or optional modules.
 
-## Structure
+Quick steps to enable only Hyprland
 
-This repository is designed to be modular, allowing you to easily swap Desktop Environments (DEs), Window Managers (WMs), and manage users and secrets.
+1. Edit `hosts/default/configuration.nix` and set these two entries to only include Hyprland:
 
-```
-.
-├── flake.nix             # Entry point
-├── hosts
-│   └── default           # Host 'default'
-│       ├── configuration.nix # System entry point
-│       └── home.nix          # Home Manager entry point
-├── modules
-│   ├── core              # Core system configuration
-│   ├── desktop           # DE/WM configurations
-│   │   └── hyprland      # Hyprland module
-│   ├── programs          # App configurations
-│   └── ...
-└── secrets               # Secrets (gitignored)
-    └── secrets.nix       # Your secrets file
-```
+   - Replace `environment.systemPackages` with:
+     ```nix
+     environment.systemPackages = with pkgs; [ hyprland ];
+     ```
 
-## Features
+   - Replace the per-user package list with:
+     ```nix
+     users.users.r.packages = with pkgs; [ hyprland ];
+     ```
 
-- **Flakes**: Uses Nix Flakes for reproducible builds.
-- **Home Manager**: Manages user dotfiles and packages.
-- **Modular**: Easily enable/disable modules in `hosts/default/configuration.nix`.
-- **Hyprland**: Pre-configured Hyprland module with Kitty.
-- **Secrets**: Separation of secrets from the git repository.
+   Remove any other packages, desktop managers, or Home Manager imports.
 
-## Installation
+2. (Optional) Generate hardware config if missing:
 
-1.  **Clone the repository**:
-    ```bash
-    git clone <your-repo-url> ~/nixos-config
-    cd ~/nixos-config
-    ```
+   ```bash
+   nixos-generate-config --show-hardware-config > hosts/default/hardware-configuration.nix
+   ```
 
-2.  **Generate Hardware Config**:
-    If this is a new machine, generate your hardware configuration:
-    ```bash
-    nixos-generate-config --show-hardware-config > hosts/default/hardware-configuration.nix
-    ```
-    Then uncomment the import in `hosts/default/configuration.nix`.
+3. Rebuild the system:
 
-3.  **Setup Secrets**:
-    Copy the example secrets file:
-    ```bash
-    cp secrets/secrets.nix.example secrets/secrets.nix
-    ```
-    Edit `secrets/secrets.nix` to add your sensitive data.
+   ```bash
+   nixos-rebuild switch --flake .#default
+   ```
 
-4.  **Install/Switch**:
-    ```bash
-    nixos-rebuild switch --flake .#default
-    ```
-
-## Customization
-
-### Changing Desktop Environment
-To switch from Hyprland to another DE (e.g., KDE):
-1.  Create a new module in `modules/desktop/kde/default.nix`.
-2.  In `hosts/default/configuration.nix`, comment out the Hyprland import and add the KDE import.
-
-### Adding Packages
-- **System-wide**: Add to `modules/core/default.nix` or `hosts/default/configuration.nix`.
-- **User-specific**: Add to `hosts/default/home.nix`.
-
-### Managing Dotfiles
-This config uses Home Manager. You can define your dotfiles in `home.nix` or create separate modules in `modules/programs/` and import them.
+If you want me to automatically edit `hosts/default/configuration.nix` to leave only Hyprland and remove everything else, say so and I'll make the change.

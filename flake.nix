@@ -1,29 +1,27 @@
 {
-  description = "NixOS Configuration";
+  description = "Minimal NixOS flake testttt";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    hyprland.url = "github:hyprwm/Hyprland";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
-    nixosConfigurations = {
-      default = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = { inherit inputs; };
-        modules = [
-          ./hosts/default/configuration.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.r = import ./hosts/default/home.nix;
-            home-manager.extraSpecialArgs = { inherit inputs; };
-          }
-        ];
+  outputs = { self, nixpkgs, ... }:
+    let
+      system = "x86_64-linux";
+      # Import a base nixpkgs to get `lib` without any custom config
+      base = import nixpkgs { inherit system; };
+      # Import nixpkgs again, but pass a config that allows only obsidian as unfree
+      pkgs = import nixpkgs {
+        inherit system;
+        config = {
+          allowUnfreePredicate = pkg: base.lib.getName pkg == "obsidian";
+        };
+      };
+    in {
+      nixosConfigurations.default = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [ ./hosts/default/configuration.nix ];
+        specialArgs = { inherit pkgs; };
       };
     };
-  };
 }

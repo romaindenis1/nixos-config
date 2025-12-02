@@ -1,46 +1,87 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
-  imports = [
-    ../../modules/core/default.nix
-    ../../modules/desktop/hyprland/default.nix
-    ../../modules/programs/kitty.nix
-    # Include hardware scan if available. 
-    # You should generate this with 'nixos-generate-config' or copy your existing one.
-    # ./hardware-configuration.nix
-    
-    # Import secrets if they exist
-    (if builtins.pathExists ../../secrets/secrets.nix then ../../secrets/secrets.nix else {})
+  imports = [ ./hardware-configuration.nix ];
+
+  users.users.r = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "video" "audio" ];
+    shell = pkgs.zsh;
+  };
+
+  #Flakes
+  nix.settings.experimental-features = "nix-command flakes";
+
+  # Enable zsh program support
+  programs.zsh.enable = true;
+
+  # Enable Hyprland
+  programs.hyprland.enable = true;
+  
+
+  #Docker
+  #virtualisation.docker.enable = true;
+
+
+  #Launch Hyprland at login
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        command = "Hyprland";
+        user = "r";
+      };
+    };
+  };
+systemd.user.services.waybar = {
+    description = "Waybar";
+    wantedBy = [ "default.target" ];  # Makes sure it starts in the user session
+    serviceConfig.ExecStart = "${pkgs.waybar}/bin/waybar";
+  };
+
+  # Allow only Obsidian (unfree) rather than all unfree packages
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "obsidian" ];
+
+  environment.systemPackages = with pkgs; [
+    hyprland
+    waybar
+    kitty
+    ncmpcpp
+    neovim
+    wl-clipboard
+    git
+    gh
+    firefox
+    zsh
+    neofetch
+    rofi
+    rustc
+    cargo
+    onefetch
+    wlogout
+
+    obsidian
+    qbittorrent
   ];
 
-  # Bootloader.
+
+  # Networking
+  networking.networkmanager.enable = true;
+
+  #nix looks cooler than nixos :) 
+  networking.hostName = "nix";
+  
+  # Bootloader - im on UEFI
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "nixos"; # Define your hostname.
+  # Enable ssh for convenience
+  services.openssh.enable = true;
 
-  # Enable networking
-  networking.networkmanager.enable = true;
-
-  # Set your time zone.
-  time.timeZone = "Europe/Paris";
-
-  # Select internationalisation properties.
+  # Locale and timezone
+  time.timeZone = "UTC";
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # Define a user account.
-  users.users.r = {
-    isNormalUser = true;
-    description = "r";
-    extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [];
-  };
+  system.stateVersion = "25.05";
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
-  # Flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  system.stateVersion = "23.11";
 }
