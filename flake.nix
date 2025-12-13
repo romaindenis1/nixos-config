@@ -8,20 +8,40 @@
   outputs = { self, nixpkgs, ... }:
     let
       system = "x86_64-linux";
-      # Import a base nixpkgs to get `lib` without any custom config
-      base = import nixpkgs { inherit system; };
-      # Import nixpkgs again, but pass a config that allows only obsidian as unfree
+
+      # Configured nixpkgs WITH unfree predicate
       pkgs = import nixpkgs {
         inherit system;
-        config = {
-          allowUnfreePredicate = pkg: base.lib.getName pkg == "obsidian";
-        };
+        config.allowUnfreePredicate = pkg:
+          builtins.elem (pkgs.lib.getName pkg) [
+            "vscode"
+            "vscode-wayland"
+            "obsidian"
+          ];
       };
-    in {
+    in
+    {
       nixosConfigurations.default = nixpkgs.lib.nixosSystem {
         inherit system;
-        modules = [ ./hosts/default/configuration.nix ];
+
+        # Pass pkgs and any extras to your module
         specialArgs = { inherit pkgs; };
+
+        modules = [
+          # Your actual system config
+          ./hosts/default/configuration.nix
+
+          # Add the unfree config as a module to ensure it is applied
+          {
+            nixpkgs.config.allowUnfreePredicate = pkg:
+              builtins.elem (pkgs.lib.getName pkg) [
+                "vscode"
+                "vscode-wayland"
+                "obsidian"
+              ];
+          }
+        ];
       };
     };
 }
+

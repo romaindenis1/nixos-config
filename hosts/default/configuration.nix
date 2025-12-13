@@ -3,85 +3,118 @@
 {
   imports = [ ./hardware-configuration.nix ];
 
+  # ==========================================
+  # 1. CRITICAL HARDWARE FIXES (The "Jitter" Fix)
+  # ==========================================
+  
+  # ThinkPad E14 Gen 7 is too new for the default kernel. 
+  # We MUST use the latest kernel for smooth graphics.
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  # Fixes screen stutter/flicker common on ThinkPads (Intel Graphics)
+  boot.kernelParams = [ 
+    "i915.enable_psr=0" 
+  ];
+
+  # Enable Graphics Drivers (OpenGL/Vulkan)
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+    extraPackages = with pkgs; [
+      intel-media-driver   # For Intel GPUs (Broadwell+)
+      libvdpau-va-gl
+    ];
+  };
+
+  # ==========================================
+  # 2. KEYBOARD (Swiss Fix)
+  # ==========================================
+  
+  # This sets the layout for the console (before you login)
+  console.keyMap = "sg"; # 'sg' is the code for Swiss German in console
+
+  # This sets the layout for X11 and Hyprland
+  services.xserver.xkb = {
+    layout = "ch";
+    variant = "nodeadkeys"; # This makes ~ and ^ type immediately
+  };
+
+  # ==========================================
+  # 3. HYPRLAND CONFIGURATION
+  # ==========================================
+
+  programs.hyprland = {
+    enable = true;
+    xwayland.enable = true;
+  };
+
+  # Fixes for Electron apps (Obsidian, VSCode) to stop them from lagging
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    WLR_NO_HARDWARE_CURSORS = "1"; # Use this if your cursor is invisible or glitchy
+  };
+
+  # ==========================================
+  # 4. SYSTEM BASICS
+  # ==========================================
+
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  networking.networkmanager.enable = true;
+
+  time.timeZone = "UTC";
+  i18n.defaultLocale = "en_US.UTF-8";
+
+  # ==========================================
+  # 5. USER & PACKAGES
+  # ==========================================
+
   users.users.r = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "video" "audio" ];
+    extraGroups = [ "wheel" "video" "audio" "networkmanager" ];
     shell = pkgs.zsh;
   };
 
-  #Flakes
-  nix.settings.experimental-features = "nix-command flakes";
-
-  # Enable zsh program support
-  programs.zsh.enable = true;
-
-  # Enable Hyprland
-  programs.hyprland.enable = true;
-  
-
-  #Docker
-  #virtualisation.docker.enable = true;
-
-
-  #Launch Hyprland at login
   services.greetd = {
     enable = true;
     settings = {
       default_session = {
-        command = "Hyprland";
+        command = "${pkgs.hyprland}/bin/Hyprland";
         user = "r";
       };
     };
   };
-systemd.user.services.waybar = {
-    description = "Waybar";
-    wantedBy = [ "default.target" ];  # Makes sure it starts in the user session
-    serviceConfig.ExecStart = "${pkgs.waybar}/bin/waybar";
-  };
 
-  # Allow only Obsidian (unfree) rather than all unfree packages
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "obsidian" ];
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  programs.zsh.enable = true;
+  services.openssh.enable = true;
 
+
+  
+  nixpkgs.config.allowUnfreePredicate = pkg:
+    builtins.elem (lib.getName pkg) [ "obsidian" "vscode" ];
+  
   environment.systemPackages = with pkgs; [
     hyprland
     waybar
     kitty
-    ncmpcpp
-    neovim
+    rofi-wayland
+    wlogout
     wl-clipboard
+    zsh
     git
     gh
-    firefox
-    zsh
+    neovim
     neofetch
-    rofi
-    rustc
-    cargo
-    onefetch
-    wlogout
+    ncmpcpp
+    firefox
+    qbittorrent
+    vlc
 
     obsidian
-    qbittorrent
+    vscode
   ];
 
-
-  # Networking
-  networking.networkmanager.enable = true;
-
-  #nix looks cooler than nixos :) 
-  networking.hostName = "nix";
-  
-  # Bootloader - im on UEFI
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  # Enable ssh for convenience
-  services.openssh.enable = true;
-
-  # Locale and timezone
-  time.timeZone = "UTC";
-  i18n.defaultLocale = "en_US.UTF-8";
-
   system.stateVersion = "25.05";
-
 }
