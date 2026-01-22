@@ -1,6 +1,4 @@
-// This file has been moved to the root directory as config.nix.
-
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, pkgs-unstable, ... }:
 
 {
   imports = [ ./hardware-configuration.nix ];
@@ -55,6 +53,7 @@
     shell = pkgs.zsh;
   };
 
+  # Ensure Hyprland is the only session
   services.greetd = {
     enable = true;
     settings = {
@@ -101,23 +100,21 @@
     vlc
     networkmanager
     networkmanagerapplet
+    alsa-utils
     gnome-power-manager
     networkmanager_dmenu
     obsidian
     vscode
-
     adwaita-icon-theme
+    networkmanagerapplet
     cava
     tty-clock
+    pkgs-unstable.gemini-cli
+    # Add polkit to system packages to ensure it is available
+    polkit
+    # Add networkmanager-openconnect to resolve the username issue
+    networkmanager-openconnect
   ];
 
   system.stateVersion = "25.05";
-
-  # KDE Plasma configuration
-  services.xserver.desktopManager.plasma5.enable = true;
-  services.xserver.displayManager.sddm.enable = true;
-  # Enable multiple desktop environments for interchangeability
-  services.xserver.displayManager.sddm.settings = {
-    Sessions = [ "hyprland.desktop" "plasma.desktop" ];
-  };
 }
