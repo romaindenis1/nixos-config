@@ -18,6 +18,8 @@
             "vscode"
             "vscode-wayland"
             "obsidian"
+            "steam"
+            "steam-unwrapped"
           ];
       };
       pkgs-unstable = import nixpkgs-unstable {
@@ -39,7 +41,7 @@
           # Add the unfree config as a module to ensure it is applied
           {
             nixpkgs.config.allowUnfreePredicate = pkg:
-              builtins.elem (pkgs.lib.getName pkg) [
+              builtins.elem (pkg.lib.getName pkg) [
                 "vscode"
                 "vscode-wayland"
                 "obsidian"

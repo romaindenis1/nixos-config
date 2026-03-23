@@ -67,6 +67,15 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   programs.zsh.enable = true;
   services.openssh.enable = true;
+  services.flatpak.enable = true;
+
+  systemd.services.flatpak-repo = {
+    wantedBy = [ "multi-user.target" ];
+    path = [ pkgs.flatpak ];
+    script = ''
+      flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    '';
+  };
 
   fonts = {
     fontconfig.enable = true;
@@ -78,8 +87,7 @@
     ];
   };
 
-  nixpkgs.config.allowUnfreePredicate = pkg:
-    builtins.elem (lib.getName pkg) [ "obsidian" "vscode" ];
+  programs.gamemode.enable = true;
 
   environment.systemPackages = with pkgs; [
     hyprland
@@ -102,7 +110,6 @@
     networkmanagerapplet
     alsa-utils
     gnome-power-manager
-    networkmanager_dmenu
     obsidian
     vscode
     adwaita-icon-theme
@@ -110,11 +117,18 @@
     cava
     tty-clock
     pkgs-unstable.gemini-cli
+    pkgs-unstable.ryubing
+    steam-run
+    vulkan-tools
     # Add polkit to system packages to ensure it is available
     polkit
     # Add networkmanager-openconnect to resolve the username issue
     networkmanager-openconnect
+    unzip
   ];
+
+  virtualisation.docker.enable = true;
+  users.extraGroups.docker.members = [ "r" ];
 
   system.stateVersion = "25.05";
 }
