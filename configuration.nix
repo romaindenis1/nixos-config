@@ -28,6 +28,9 @@
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
+    # Incoming config uses options (float_gaps, gesture) only in newer Hyprland.
+    package = pkgs-unstable.hyprland;
+    portalPackage = pkgs-unstable.xdg-desktop-portal-hyprland;
   };
 
   environment.sessionVariables = {
@@ -84,6 +87,7 @@
       font-awesome
       powerline-fonts
       (nerdfonts.override { fonts = [ "JetBrainsMono" ]; })
+      udev-gothic-nf
     ];
   };
 
@@ -125,6 +129,33 @@
     # Add networkmanager-openconnect to resolve the username issue
     networkmanager-openconnect
     unzip
+
+    # Quickshell bar/widgets stack (lifted from nixos-config-incoming).
+    # quickshell and matugen are recent; pull from unstable.
+    pkgs-unstable.quickshell
+    pkgs-unstable.matugen
+    swww
+    playerctl
+    grim
+    slurp
+    satty
+    swappy
+    cliphist
+    pamixer
+    brightnessctl
+    socat
+    jq
+    yq-go
+    imagemagick
+    libnotify
+    acpi
+    lm_sensors
+    bc
+    fd
+    ripgrep
+    qt6.qtmultimedia
+    qt6.qt5compat
+    qt6.qtwebsockets
   ];
 
   virtualisation.docker.enable = true;

@@ -1,16 +1,26 @@
 {
-  description = "Minimal NixOS flake testttt";
+  description = "Merged NixOS flake: current base + quickshell bar/widgets from incoming";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    home-manager = {
+      url = "github:nix-community/home-manager/release-24.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, ... }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, ... }:
     let
       system = "x86_64-linux";
 
-      # Configured nixpkgs WITH unfree predicate
+      # Absolute filesystem path where this config is deployed. Used by
+      # mkOutOfStoreSymlink and by scripts that live outside the nix store.
+      # Default is the standard NixOS location; change here if you deploy
+      # this tree somewhere else.
+      configRoot = "/etc/nixos";
+
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfreePredicate = pkg:
@@ -26,19 +36,25 @@
         inherit system;
         config.allowUnfree = true;
       };
-    in
-    {
-      nixosConfigurations.default = nixpkgs.lib.nixosSystem {
+
+      mkHost = nixpkgs.lib.nixosSystem {
         inherit system;
 
-        # Pass pkgs and any extras to your module
-        specialArgs = { inherit pkgs; pkgs-unstable = pkgs-unstable; };
+        specialArgs = {
+          inherit pkgs configRoot;
+          pkgs-unstable = pkgs-unstable;
+        };
 
         modules = [
-          # Your actual system config
           ./configuration.nix
-
-          # Add the unfree config as a module to ensure it is applied
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "backup";
+            home-manager.extraSpecialArgs = { inherit configRoot; };
+            home-manager.users.r = import ./home.nix;
+          }
           {
             nixpkgs.config.allowUnfreePredicate = pkg:
               builtins.elem (pkg.lib.getName pkg) [
@@ -49,6 +65,10 @@
           }
         ];
       };
+    in {
+      nixosConfigurations = {
+        default = mkHost;
+        nixos = mkHost;
+      };
     };
 }
-
